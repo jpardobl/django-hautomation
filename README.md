@@ -8,7 +8,8 @@ REST API to control home automation deployments coded as Django apps.
 Components
 ==========
 
-hacore - Django app which holds the core of the system. It has de database definitions
+hacore - Django app which holds the core of the system. It has de database definitions.
+
 harest - Django app meant to publish a REST API which accepts the home automation device management and 
 the home automation commands.
 
