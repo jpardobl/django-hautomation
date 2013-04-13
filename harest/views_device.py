@@ -11,7 +11,7 @@ from django.db import IntegrityError
 def get(request, *args, **kwargs):
 
     if "did" in kwargs:
-        obj = get_object_or_404(Device, id=kwargs["did"])
+        obj = get_object_or_404(Device, did=kwargs["did"])
 
         response = HttpResponse(
             content=obj.to_json(),

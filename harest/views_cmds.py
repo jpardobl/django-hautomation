@@ -34,3 +34,5 @@ def pl_switch(request, protocol, did):
     ret = pl_switch(device.did, value)
 
     return HttpResponse(status=200)
+
+
