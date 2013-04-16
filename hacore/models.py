@@ -26,7 +26,7 @@ class Device(models.Model):
             "caption": self.caption,
             "did": self.did,
             "status": self.status,
-            "device_status": self.device_type,
+            "device_type": self.device_type,
             "protocol": self.protocol.__unicode__(),
             })
 

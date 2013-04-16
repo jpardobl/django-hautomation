@@ -1,13 +1,16 @@
 from django.http import HttpResponseBadRequest, HttpResponse
 from hacore.models import Device, Protocol
-from forms import DeviceForm
+from forms import DeviceForm, DeviceUpdateForm
 from django.shortcuts import redirect, render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 import simplejson
 from django.db import IntegrityError
+from django.contrib.auth.decorators import login_required
+from auth import access_required
 
 
+#@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
 
     if "did" in kwargs:
@@ -26,7 +29,7 @@ def get(request, *args, **kwargs):
             return HttpResponseBadRequest("Invalid protocol")
         protocol = get_object_or_404(Protocol, name=request.GET["protocol"])
 
-        data = [x.to_json() for x in protocol.devices]
+        data = [x.to_json() for x in protocol.devices.all()]
 
     elif "device_type" in request.GET:
         if request.GET["device_type"] == "" or request.GET["device_type"] is None:
@@ -54,7 +57,7 @@ def get(request, *args, **kwargs):
 
 def put(request, did):
     obj = get_object_or_404(Device, did=did)
-    form = DeviceForm(request.POST, instance=obj)
+    form = DeviceUpdateForm(request.POST, instance=obj)
     if form.is_valid():
 
         obj = form.save(commit=False)
@@ -97,6 +100,7 @@ def post(request):
     return HttpResponseBadRequest(simplejson.dumps({"errors": [x for x in form.errors]}))
 
 
+@access_required
 @csrf_exempt
 def entrance(request, *args, **kwargs):
 

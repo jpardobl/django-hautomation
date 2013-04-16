@@ -8,14 +8,14 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name = 'django-hautomation',
-    version = '0.1',
+    version = '0.2',
     packages = ['hacore', 'harest'],
     include_package_data = True,
     license = 'BSD License',
     description = 'A Django app which provides a REST API for home automation',
     long_description = README,
 #TODO set the project's home page
-    url = 'http://www.example.com/',
+    url = 'http://jpardobl.com',
     author = 'Javier Pardo Blasco(jpardobl)',
     author_email = 'jpardo@digitalhigh.es',
     extras_require = {
