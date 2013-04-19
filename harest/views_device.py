@@ -8,13 +8,13 @@ import simplejson
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from auth import access_required
-
+from django.http import QueryDict
 
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
 
-    if "did" in kwargs:
-        obj = get_object_or_404(Device, did=kwargs["did"])
+    if "did" in kwargs and "protocol" in kwargs:
+        obj = get_object_or_404(Device, protocol=kwargs["protocol"], did=kwargs["did"])
 
         response = HttpResponse(
             content=obj.to_json(),
@@ -55,30 +55,42 @@ def get(request, *args, **kwargs):
     return response
 
 
-def put(request, did):
-    obj = get_object_or_404(Device, did=did)
-    form = DeviceUpdateForm(request.POST, instance=obj)
-    if form.is_valid():
+def put(request, protocol, did):
 
+    protocol = get_object_or_404(Protocol, name=protocol)
+    obj = get_object_or_404(Device, protocol=protocol, did=did)
+
+    qd = QueryDict(request.body, request.encoding)
+    form = DeviceUpdateForm(qd, instance=obj)
+
+    if form.is_valid():
+        print "aquiii"
         obj = form.save(commit=False)
-        if "protocol" in request.POST:
-            protocol = get_object_or_404(Protocol, name=request.POST["protocol"])
-            obj.protocol = protocol
+
         obj.save()
 
-        return redirect(reverse('device_by_id', args=[obj.id]))
-    return HttpResponseBadRequest(simplejson.dumps({"errors": [x for x in form.errors]}))
+        response = redirect(reverse('device_by_id', kwargs={"protocol": obj.protocol, "did": obj.id}))
+        response.content_type = "application/json"
+        return response
+    print "errores %s" % form.errors
+    return HttpResponseBadRequest(
+        simplejson.dumps({"errors": [x for x in form.errors]}),
+        content_type="application/json")
 
 
-def delete(request, did):
-    get_object_or_404(Device, did=did).delete()
+def delete(request, protocol, did):
+    protocol = get_object_or_404(Protocol, name=protocol)
+    get_object_or_404(Device, protocol=protocol, did=did).delete()
     return HttpResponse(status=204)
 
 
 def post(request):
 
     if "protocol" not in request.POST:
-        return HttpResponseBadRequest(simplejson.dumps({"errors": ["protocol"]}))
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["protocol"]}),
+            content_type="application/json",
+            )
     protocol = get_object_or_404(Protocol, name=request.POST["protocol"])
 
     form = DeviceForm(request.POST)
@@ -90,18 +102,27 @@ def post(request):
             validate_address(obj.did)
             obj.save()
         except ValueError:
-            return HttpResponseBadRequest({"errors": ["did"]})
+            print "eje1"
+            return HttpResponseBadRequest(
+                content=simplejson.dumps({"errors": ["did"]}),
+                content_type="application/json",
+                )
         except IntegrityError:
             return HttpResponse(
                 status=409,
-                content=simplejson.dumps({"conflicting": ["did", "protocol"]})
+                content=simplejson.dumps({"conflicting": ["did", "protocol"]}),
+                content_type="application/json",
                 )
-        return redirect(reverse('device_by_id', args=[obj.id]))
-    return HttpResponseBadRequest(simplejson.dumps({"errors": [x for x in form.errors]}))
+        response = redirect(reverse('device_by_id', kwargs={"protocol": obj.protocol, "did": obj.id}))
+        response.content_type = "application/json"
+        return response
+    return HttpResponseBadRequest(
+        content=simplejson.dumps({"errors": [x for x in form.errors]}),
+        content_type="application/json",)
 
 
-@access_required
 @csrf_exempt
+@access_required
 def entrance(request, *args, **kwargs):
 
     if request.method == "GET":
@@ -110,18 +131,20 @@ def entrance(request, *args, **kwargs):
     if request.method == "PUT":
         try:
             did = kwargs["did"]
-            return put(request, did)
+            protocol = kwargs["protocol"]
+            return put(request, protocol, did)
         except KeyError:
-            return HttpResponseBadRequest("Device id is missing")
+            return HttpResponseBadRequest(simplejson.dumps({"errors": ["Device id(did) or protocol missing"]}))
 
         return put(request)
 
     if request.method == "DELETE":
         try:
             did = kwargs["did"]
-            return delete(request, did)
+            protocol = kwargs["protocol"]
+            return delete(request, protocol, did)
         except KeyError:
-            return HttpResponseBadRequest("Device id is missing")
+            return HttpResponseBadRequest(simplejson.dumps({"errors": ["Device id(did) or protocol missing"]}))
 
     if request.method == "POST":
         return post(request)

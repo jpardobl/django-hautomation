@@ -216,4 +216,34 @@ class CmdTest(RestTest):
 
         self.assertTrue(r.status_code == 200, "Not properly validating pl_switch values, sent uppercaer ON and didn't accept it\n%s" % show_response(r))
 
+        data = {"value": "on"}
+        r = requests.request("PUT", "{host}{path}".format(**url), data=data)
+        self.assertTrue(r.status_code == 200, "Not properly validating pl_switch values, sent on and didn't accept it\n%s" % show_response(r))
+
+        data = {"value": "OFF"}
+        r = requests.request("PUT", "{host}{path}".format(**url), data=data)
+        self.assertTrue(r.status_code == 200, "Not properly validating pl_switch values, sent uppercaer OFF and didn't accept it\n%s" % show_response(r))
+
+        data = {"value": "off"}
+        r = requests.request("PUT", "{host}{path}".format(**url), data=data)
+        self.assertTrue(r.status_code == 200, "Not properly validating pl_switch values, sent on and didn't accept it\n%s" % show_response(r))
+
+        data = {"value": "Odgdfg"}
+        r = requests.request("PUT", "{host}{path}".format(**url), data=data)
+        self.assertTrue(r.status_code == 400, "Not properly validating pl_switch values, sent invalid value and it accepted it\n%s" % show_response(r))
+
+
+        url = {
+            "host": self.live_server_url,
+            "path": reverse("pl_switch", kwargs={
+                    "protocol": "X10",
+                    "did": "A1hh",
+                }),
+
+        }
+        data = {"value": "Odgdfg"}
+        r = requests.request("PUT", "{host}{path}".format(**url), data=data)
+        self.assertTrue(r.status_code == 400, "Not properly validating X10 address, sent invalid did and it accepted it\n%s" % show_response(r))
+
+
         del_device("A1", self.live_server_url)
