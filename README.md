@@ -14,12 +14,16 @@ You need to install any protocol module to do this.
 For example you can use https://github.com/jpardobl/hautomation_x10 to
 manage X10 devices.
 
-Detailed documentation is in the "docs" directory.
+
 
 Quick start
 -----------
 
-1. Create a django project, and cd into it.
+1. Install by issuing the following command:
+
+  $ pip install -e git+https://github.com/jpardobl/django-hautomation.git#egg=django-hautomation
+
+2. Create a django project, and cd into it.
 
 2. Configure your database.
 
@@ -31,13 +35,18 @@ Quick start
 	  'harest',
       )
 
-4. Include the polls URLconf in your project urls.py like this::
+4. Include the polls URLconf in your project urls.py like this:
 
-	    url(r'rest/', include('harest.urls'))
+	    url(r'rest/', include('harest.urls')),
 
 5. Run `python manage.py syncdb` to create the homeautomation models.
 
+  Be aware of the superuser that you create when deplying the database, you will need it
+  to issuing requests to the REST API as follows.
+
 6. Install any protocol module. For instance https://github.com/jpardobl/hautomation_x10
+
+    $ pip install -e git+https://github.com/jpardobl/hautomation_x10.git#egg=hautomation_x10
 
 7. Initialize environ variable as follows:
 
@@ -45,6 +54,110 @@ Quick start
 
 8. exec script: populate_x10_db this fills the db with the info about X10 protocol
 
+  $ populate_x10_db
+
 9. Start server:
 
   $ python manage.py runserver
+
+10. Create a home automation device:
+
+ $ curl -X POST http://localhost:8000/rest/manage/device/ \
+ --data "protocol=X10&did=A5&device_type=dimmer&caption=salon" \
+ -H "USERNAME:<username>" -H "PASSWORD:<password>"
+
+ Please replace <username> and <password> with the ones created at syncdb command.
+
+11. Send your first home automation command
+
+ $ curl -X PUT http://localhost:8000/rest/cmd/pl_switch/X10/A5 \
+ --data "value=off" -H "USERNAME:r" -H "PASSWORD:r"
+
+REST API Reference
+------------------
+
+The REST API helps in two ways. On one hand, it enables the CRUD of device resources.
+On the other hand, it delivers the capability of sending home automation commands
+to previously created devices.
+
+Every REST API request MUST have two headers:
+
+HTTP_USERNAME: the alias os a user created at the django poject
+HTTP_PASSWORD: the users password
+
+
+Creating a device
+
+This can be achieved by the following request:
+
+POST  /rest/manage/device
+
+{
+  "protocol": "X10",
+  "did": "A5",
+  "device_type": "dimmer",
+  "caption": "some description"
+}
+
+The previous request, creates a new device with protocol X10, address A5, of type "dimmer"
+and with the caption "some description".
+
+ - device_type possible values are "switch" or "dimmer"
+ - protocol possible values are the ones created by the underlying wrapper modules, for example
+hautomation_x10 modules enables de X10 protocol, so the value it enables is "X10".
+ - caption is a free text description
+ - did is the device address in the protocol namespace. For example, once the
+ homeautomation_x10 module is enabled, the address are of the kind [a-zA-Z]\d{1,2}
+
+Deleting a device
+
+By issuying a command to the following url, you can delete the device
+
+DELETE /rest/manage/device/<protocol>/<did>
+
+Update a device info
+
+Then a request to the following url and payload will update the device info at
+the database. Either or both payload parameters can be sent.
+
+PUT /rest/manage/device/<protocol>/<did>
+
+{
+   "device_type": "switch",
+   "caption": "another description"
+}
+
+Retrieving devices
+
+The REST API has got a query engine. Some of its requests are the following
+
+To retrieve a device by its address and protocol
+
+ $ curl -X GET http://localhost:8000/rest/manage/device/X10/A5 -H "USERNAME:r" -H
+
+To retrieve a set of devices by its type
+
+ $ curl -X GET http://localhost:8000/rest/manage/device?device_type=dimmer -H "USERNAME:r" -H "PASSWORD:r"
+
+ $ curl -X GET http://localhost:8000/rest/manage/device?device_type=switch -H "USERNAME:r" -H "PASSWORD:r"
+
+To retrieve a set of devices by its protocol
+
+ $ curl -X GET http://localhost:8000/rest/manage/device?protocol=X10 -H "USERNAME:r" -H "PASSWORD:r"
+
+
+To switch off a device
+
+ $ curl -X PUT http://localhost:8000/rest/cmd/pl_switch/X10/A5 --data "value=off" -H "USERNAME:r" -H "PASSWORD:r"
+
+To switch on a device
+
+ $ curl -X PUT http://localhost:8000/rest/cmd/pl_switch/X10/A5 --data "value=on" -H "USERNAME:r" -H "PASSWORD:r"
+
+To dim a device by 31(POST request because it is not idempotent request)
+
+ $ curl -X POST http://localhost:8000/rest/cmd/pl_dim/X10/A5 --data "value=31" -H "USERNAME:r" -H "PASSWORD:r"
+
+To bri a device by 31(POST request because it is not idempotent request)
+
+ $ curl -X POST http://localhost:8000/rest/cmd/pl_bri/X10/A5 --data "value=31" -H "USERNAME:r" -H "PASSWORD:r"

@@ -14,7 +14,8 @@ from django.http import QueryDict
 def get(request, *args, **kwargs):
 
     if "did" in kwargs and "protocol" in kwargs:
-        obj = get_object_or_404(Device, protocol=kwargs["protocol"], did=kwargs["did"])
+        protocol = get_object_or_404(Protocol, name=kwargs["protocol"])
+        obj = get_object_or_404(Device, protocol=protocol, did=kwargs["did"])
 
         response = HttpResponse(
             content=obj.to_json(),
@@ -38,7 +39,7 @@ def get(request, *args, **kwargs):
         data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
 
     elif "status" in request.GET:
-        if request.GET["status"] == "" or request.GET["status"] is None:
+        if request.GET["status"] is None:
             return HttpResponseBadRequest("Ivalid status")
 
         data = [x.to_json() for x in Device.objects.filter(status=request.GET["status"])]
