@@ -1,6 +1,5 @@
 LICENSE
 MANIFEST.in
-README.txt
 setup.py
 django_hautomation.egg-info/PKG-INFO
 django_hautomation.egg-info/SOURCES.txt
@@ -13,7 +12,9 @@ hacore/__init__.py
 hacore/admin.py
 hacore/models.py
 harest/__init__.py
+harest/auth.py
 harest/forms.py
+harest/middleware.py
 harest/models.py
 harest/tests.py
 harest/urls.py

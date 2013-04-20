@@ -17,7 +17,7 @@ class Device(models.Model):
     caption = models.CharField(max_length=100)
     #device id
     did = models.CharField(max_length=100)
-    status = models.CharField(max_length=100, blank=True, null=True)
+    status = models.IntegerField(blank=True, null=True)
     device_type = models.CharField(max_length=10, choices=(('switch', 'switch'), ('dimmer', 'dimmer'), ('sensor', 'sensor')))
     protocol = models.ForeignKey(Protocol, related_name="devices")
 

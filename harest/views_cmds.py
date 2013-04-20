@@ -46,6 +46,8 @@ def pl_switch(request, protocol, did):
             content_type="application/json",
             )
 
+    device.status = 0 if value == "off" else 100
+    device.save()
     return HttpResponse(status=200, content_type="application/json")
 
 
@@ -79,6 +81,11 @@ def pl_dim(request, protocol, did):
             content_type="application/json",
             )
 
+    ds = int(device.status) - int(value)
+    if ds < 0:
+        ds = 0
+    device.status = ds
+    device.save()
     return HttpResponse(status=200,
             content_type="application/json",
             )
@@ -113,6 +120,11 @@ def pl_bri(request, protocol, did):
             content_type="application/json",
             )
 
+    ds = int(device.status) - int(value)
+    if ds > 100:
+        ds = 100
+    device.status = ds
+    device.save()
     return HttpResponse(
         status=200,
         content_type="application/json",
