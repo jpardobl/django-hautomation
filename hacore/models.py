@@ -3,6 +3,7 @@ import simplejson
 
 DEVICE_TYPES = ("switch", "dimmer")
 
+
 class Protocol(models.Model):
 
     name = models.CharField(max_length=10, unique=True)
@@ -11,6 +12,9 @@ class Protocol(models.Model):
 
     def __unicode__(self):
         return u"%s" % self.name
+
+    def to_json(self):
+        return simplejson.dumps({"name": self.name})
 
 
 class Device(models.Model):

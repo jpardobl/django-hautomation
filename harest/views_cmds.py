@@ -1,9 +1,10 @@
 from hacore.models import Protocol, Device
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.http import QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from auth import access_required
+from django.core.urlresolvers import reverse
 import simplejson
 #
 # Home automation commands
@@ -17,6 +18,12 @@ import simplejson
 @access_required
 def pl_switch(request, protocol, did):
 
+    if request.method != "PUT":
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_switch command!!, arrived: %s" % request.method, ]}),
+            content_type="application/json",
+            )
+
     qd = QueryDict(request.body, request.encoding)
     if "value" not in qd:
         return HttpResponseBadRequest(
@@ -24,12 +31,6 @@ def pl_switch(request, protocol, did):
             content_type="application/json",
             )
     value = qd["value"].lower()
-
-    if request.method != "PUT":
-        return HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_switch command!!, arrived: %s" % request.method, ]}),
-            content_type="application/json",
-            )
 
     print "protocol: %s" % protocol
     protocol = get_object_or_404(Protocol, name=protocol)
@@ -48,7 +49,9 @@ def pl_switch(request, protocol, did):
 
     device.status = 0 if value == "off" else 100
     device.save()
-    return HttpResponse(status=200, content_type="application/json")
+    response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
+    response.content_type = "application/json"
+    return response
 
 
 @csrf_exempt
@@ -86,9 +89,9 @@ def pl_dim(request, protocol, did):
         ds = 0
     device.status = ds
     device.save()
-    return HttpResponse(status=200,
-            content_type="application/json",
-            )
+    response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
+    response.content_type = "application/json"
+    return response
 
 
 @csrf_exempt
@@ -125,7 +128,6 @@ def pl_bri(request, protocol, did):
         ds = 100
     device.status = ds
     device.save()
-    return HttpResponse(
-        status=200,
-        content_type="application/json",
-        )
+    response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
+    response.content_type = "application/json"
+    return response
