@@ -123,7 +123,7 @@ def pl_bri(request, protocol, did):
             content_type="application/json",
             )
 
-    ds = int(device.status) - int(value)
+    ds = int(device.status) + int(value)
     if ds > 100:
         ds = 100
     device.status = ds
