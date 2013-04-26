@@ -13,7 +13,6 @@ import simplejson
 #      accepted values on|off
 
 
-
 @csrf_exempt
 @access_required
 def pl_switch(request, protocol, did):
@@ -32,7 +31,7 @@ def pl_switch(request, protocol, did):
             )
     value = qd["value"].lower()
 
-    print "protocol: %s" % protocol
+
     protocol = get_object_or_404(Protocol, name=protocol)
 
     device = get_object_or_404(Device, protocol=protocol, did=did)
@@ -74,7 +73,7 @@ def pl_dim(request, protocol, did):
     protocol = get_object_or_404(Protocol, name=protocol)
 
     device = get_object_or_404(Device, did=did, device_type="dimmer")
-    print "sending a value of: %s" % value
+
     exec "from %s import pl_dim" % protocol.module
     try:
         ret = pl_dim(device.did, value)
