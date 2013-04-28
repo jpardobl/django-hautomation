@@ -85,7 +85,7 @@ def pl_dim(request, protocol, did):
 
     try:
         ds = int(device.status) - int(value)
-    except TypeError::
+    except TypeError:
         ds = int(value)
 
     if ds < 0:
@@ -127,7 +127,7 @@ def pl_bri(request, protocol, did):
             )
     try:
         ds = int(device.status) + int(value)
-    except TypeError::
+    except TypeError:
         ds = int(value)
 
     if ds > 100:
