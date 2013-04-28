@@ -83,7 +83,11 @@ def pl_dim(request, protocol, did):
             content_type="application/json",
             )
 
-    ds = int(device.status) - int(value)
+    try:
+        ds = int(device.status) - int(value)
+    except TypeError::
+        ds = int(value)
+
     if ds < 0:
         ds = 0
     device.status = ds
@@ -121,8 +125,11 @@ def pl_bri(request, protocol, did):
             content=simplejson.dumps({"errors": [str(ex), ]}),
             content_type="application/json",
             )
+    try:
+        ds = int(device.status) + int(value)
+    except TypeError::
+        ds = int(value)
 
-    ds = int(device.status) + int(value)
     if ds > 100:
         ds = 100
     device.status = ds
