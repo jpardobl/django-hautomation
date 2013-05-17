@@ -42,3 +42,6 @@ class Device(models.Model):
 
     class Meta:
         unique_together = ("protocol", "did")
+
+
+import plugins

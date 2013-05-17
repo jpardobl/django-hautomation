@@ -31,12 +31,25 @@ def pl_switch(request, protocol, did):
             )
     value = qd["value"].lower()
 
-
     protocol = get_object_or_404(Protocol, name=protocol)
 
     device = get_object_or_404(Device, protocol=protocol, did=did)
 
-    exec "from %s import pl_switch" % protocol.module
+    # ginsfsm ***********************************
+    from ginsfsm.globals import global_get_gobj
+    driver = global_get_gobj("driver_X10", "X10")
+    driver.post_event(
+        driver,
+        "EV_COMMAND",
+        data=simplejson.dumps({
+            "cmd": "pl_switch",
+            "did": device.did,
+            "value": value,
+        }))
+
+    # ginsfsm ***********************************
+    """
+    exec "from %s.cmds import pl_switch" % protocol.module
 
     try:
         ret = pl_switch(device.did, value)
@@ -45,7 +58,8 @@ def pl_switch(request, protocol, did):
             content=simplejson.dumps({"errors": [str(ex), ]}),
             content_type="application/json",
             )
-
+    """
+    #TODO changes in device must be made from EV_DEVICE_UPDATE
     device.status = 0 if value == "off" else 100
     device.save()
     response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
@@ -66,15 +80,14 @@ def pl_dim(request, protocol, did):
     if "value" not in request.POST:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Dim command needs a value to be set", ]}),
-            content_type="application/json",
-            )
+            content_type="application/json", )
     value = request.POST["value"]
 
     protocol = get_object_or_404(Protocol, name=protocol)
 
     device = get_object_or_404(Device, did=did, device_type="dimmer")
 
-    exec "from %s import pl_dim" % protocol.module
+    exec "from %s.cmds import pl_dim" % protocol.module
     try:
         ret = pl_dim(device.did, value)
     except ValueError, ex:
@@ -117,7 +130,7 @@ def pl_bri(request, protocol, did):
 
     device = get_object_or_404(Device, did=did, device_type="dimmer")
 
-    exec "from %s import pl_bri" % protocol.module
+    exec "from %s.cmds import pl_bri" % protocol.module
     try:
         ret = pl_bri(device.did, value)
     except ValueError, ex:
