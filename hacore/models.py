@@ -7,6 +7,7 @@ DEVICE_TYPES = ("switch", "dimmer")
 class Protocol(models.Model):
 
     name = models.CharField(max_length=10, unique=True)
+    gobj_name = models.CharField(max_length=10, unique=True)
     module = models.CharField(max_length=30, unique=True)
     validate_address_module = models.CharField(max_length=20)
 

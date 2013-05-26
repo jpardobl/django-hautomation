@@ -84,11 +84,12 @@ class Controller(GObj):
         """ Initialization zone."""
         from ginsfsm.globals import global_get_gobj
 
-        driver_x10 = global_get_gobj("driver_X10")
-        driver_x10.subscribe_event(
-            ['EV_DEVICE_UPDATE', 'EV_ERROR'],
-            driver_x10,
-        )
+        for protocol in protocols:
+            driver = global_get_gobj(protocol.gobj_name)
+            driver.subscribe_event(
+                ['EV_DEVICE_UPDATE', 'EV_ERROR'],
+                driver,
+            )
 
 
 local_conf = {
@@ -101,15 +102,21 @@ local_conf = {
     'GRouter.server':  True,
     'GRouter.localhost_route_ports':  8002,
     'GRouter.trace_router':  True,
-    'GObj.trace_mach':  True,
+    'GObj.trace_mach':  False,
     'GObj.trace_creation':  False,
-    'GObj.trace_traverse':  True,
+    'GObj.trace_traverse':  False,
     'GObj.trace_subscription':  True,
     'GSock.trace_dump':  True,
     'GObj.logger': logging,
+
+    'PyramidRoot.pyramid_router_url': '__pyramid_router__',
+    'GRouter.trace_router': True,
+
+    'GRouter.static_routes':
+    'RobberA, hautomation, http://localhost:8002;',
 }
 
-ga_controller = GAplic(name='plugin_controller_gaplic', roles='controller', **local_conf)
+ga_controller = GAplic(name='plugin_controller_gaplic', roles='hautomation', **local_conf)
 controller = ga_controller.create_gobj(
     'plugin_controller',
     Controller,
