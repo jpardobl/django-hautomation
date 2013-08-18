@@ -4,16 +4,22 @@ from auth import access_required
 
 
 def get(request, *args, **kwargs):
-    try:
-        data = [x.to_json() for x in Protocol.objects.all()]
-    except Exception:
-        data = []
 
-    response = render_to_response(
-        "device/list.json",
-        {"data": data},
-        content_type="application/json",
-    )
+    data = [x.to_json() for x in Protocol.objects.all()]
+
+    try:
+        response = render_to_response(
+            "device/list.json",
+            {"data": data},
+            content_type="application/json",
+        )
+    except Exception:
+        response = render_to_response(
+            "device/list.json",
+            {"data": []},
+            content_type="application/json",
+        )
+
     response['Cache-Control'] = 'no-cache'
     return response
 
