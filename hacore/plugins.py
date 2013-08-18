@@ -12,12 +12,16 @@ logging.basicConfig(level=logging.DEBUG)
 # --------------------------
 
 drivers = []
-protocols = Protocol.objects.all()
-for protocol in protocols:
-    print "loading %s protocol driver..." % protocol.name
-    exec "from %s import start_up" % protocol.module
+try:
+    protocols = Protocol.objects.all()
+    for protocol in protocols:
+        print "loading %s protocol driver..." % protocol.name
+        exec "from %s import start_up" % protocol.module
 
-    drivers.append(start_up())
+        drivers.append(start_up())
+except Exception:
+    pass
+
 
 
 # initialize plugins controller
@@ -88,7 +92,7 @@ class Controller(GObj):
             driver = global_get_gobj(protocol.gobj_name)
             driver.subscribe_event(
                 ['EV_DEVICE_UPDATE', 'EV_ERROR'],
-                driver,
+                self,
             )
 
 
@@ -109,11 +113,6 @@ local_conf = {
     'GSock.trace_dump':  True,
     'GObj.logger': logging,
 
-    'PyramidRoot.pyramid_router_url': '__pyramid_router__',
-    'GRouter.trace_router': True,
-
-    'GRouter.static_routes':
-    'RobberA, hautomation, http://localhost:8002;',
 }
 
 ga_controller = GAplic(name='plugin_controller_gaplic', roles='hautomation', **local_conf)
