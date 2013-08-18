@@ -23,10 +23,8 @@ except Exception:
     pass
 
 
-
 # initialize plugins controller
 # -----------------------------
-
 def ac_rx_tx_data(self, event):
     data = event.kw['data']
     print("RECIBO======> %s" % data)
@@ -87,14 +85,16 @@ class Controller(GObj):
     def start_up(self):
         """ Initialization zone."""
         from ginsfsm.globals import global_get_gobj
+        try:
 
-        for protocol in protocols:
-            driver = global_get_gobj(protocol.gobj_name)
-            driver.subscribe_event(
-                ['EV_DEVICE_UPDATE', 'EV_ERROR'],
-                self,
-            )
-
+            for protocol in protocols:
+                driver = global_get_gobj(protocol.gobj_name)
+                driver.subscribe_event(
+                    ['EV_DEVICE_UPDATE', 'EV_ERROR'],
+                    self,
+                )
+        except Exception:
+            pass
 
 local_conf = {
     'GObj.trace_mach': True,
