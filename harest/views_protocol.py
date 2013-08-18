@@ -4,7 +4,11 @@ from auth import access_required
 
 
 def get(request, *args, **kwargs):
-    data = [x.to_json() for x in Protocol.objects.all()]
+    try:
+        data = [x.to_json() for x in Protocol.objects.all()]
+    except Exception:
+        data = []
+
     response = render_to_response(
         "device/list.json",
         {"data": data},
