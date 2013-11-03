@@ -5,6 +5,8 @@ urlpatterns = patterns('harest',
     url(r'^manage/device/(?P<protocol>[a-z0-9A-Z]{3,4})/(?P<did>[\d\w]+)', 'views_device.entrance', name='device_by_id'),
     url(r'^manage/device/?', 'views_device.entrance', name='device'),
 
+    url(r'^test/?', 'views_cmds.test', name='test'),
+
     url(r'^manage/protocol/?', 'views_protocol.entrance', name='protocol'),
 
 

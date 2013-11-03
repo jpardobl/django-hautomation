@@ -13,6 +13,12 @@ import simplejson
 #      accepted values on|off
 
 
+def test(request):
+    from ginsfsm.globals import global_get_gobj
+    driver = global_get_gobj("driver_X10")
+    driver.broadcast_event("EV_DEVICE_UPDATE", data="esta es mi ata")
+
+
 @csrf_exempt
 @access_required
 def pl_switch(request, protocol, did):
@@ -31,13 +37,35 @@ def pl_switch(request, protocol, did):
             )
     value = qd["value"].lower()
 
-    protocol = get_object_or_404(Protocol, name=protocol)
+    try:
+        protocol = Protocol.objects.get(name=protocol)
+    except Protocol.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
+            content_type="application/json",
+            )
 
-    device = get_object_or_404(Device, protocol=protocol, did=did)
+    try:
+        device = Device.objects.get(did=did, device_type="dimmer")
+    except Device.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
+            content_type="application/json",
+            )
 
     # ginsfsm ***********************************
     from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj("driver_X10", "X10")
+    driver = global_get_gobj(protocol.gobj_name, protocol.name)
     driver.post_event(
         driver,
         "EV_COMMAND",
@@ -83,27 +111,47 @@ def pl_dim(request, protocol, did):
             content_type="application/json", )
     value = request.POST["value"]
 
-    protocol = get_object_or_404(Protocol, name=protocol)
-
-    device = get_object_or_404(Device, did=did, device_type="dimmer")
-
-    exec "from %s.cmds import pl_dim" % protocol.module
     try:
-        ret = pl_dim(device.did, value)
-    except ValueError, ex:
+        protocol = Protocol.objects.get(name=protocol)
+    except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
             content_type="application/json",
             )
 
     try:
-        ds = int(device.status) - int(value)
-    except TypeError:
-        ds = int(value)
+        device = Device.objects.get(did=did, device_type="dimmer")
+    except Device.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
+            content_type="application/json",
+            )
 
-    if ds < 0:
-        ds = 0
-    device.status = ds
+    # ginsfsm ***********************************
+    from ginsfsm.globals import global_get_gobj
+    driver = global_get_gobj(protocol.gobj_name, protocol.name)
+    driver.post_event(
+        driver,
+        "EV_COMMAND",
+        data=simplejson.dumps({
+            "cmd": "pl_dim",
+            "did": device.did,
+            "value": value,
+        }))
+
+    # ginsfsm ***********************************
+
+    device.status = 0 if value == "off" else 100
     device.save()
     response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
     response.content_type = "application/json"
@@ -126,26 +174,48 @@ def pl_bri(request, protocol, did):
             )
     value = request.POST["value"]
 
-    protocol = get_object_or_404(Protocol, name=protocol)
-
-    device = get_object_or_404(Device, did=did, device_type="dimmer")
-
-    exec "from %s.cmds import pl_bri" % protocol.module
     try:
-        ret = pl_bri(device.did, value)
-    except ValueError, ex:
+        protocol = Protocol.objects.get(name=protocol)
+    except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
             content_type="application/json",
             )
-    try:
-        ds = int(device.status) + int(value)
-    except TypeError:
-        ds = int(value)
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
+            content_type="application/json",
+            )
 
-    if ds > 100:
-        ds = 100
-    device.status = ds
+    try:
+        device = Device.objects.get(did=did, device_type="dimmer")
+    except Device.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
+            content_type="application/json",
+            )
+
+
+    # ginsfsm ***********************************
+    from ginsfsm.globals import global_get_gobj
+    driver = global_get_gobj(protocol.gobj_name, protocol.name)
+    driver.post_event(
+        driver,
+        "EV_COMMAND",
+        data=simplejson.dumps({
+            "cmd": "pl_bri",
+            "did": device.did,
+            "value": value,
+        }))
+
+    # ginsfsm ***********************************
+
+    device.status = 0 if value == "off" else 100
     device.save()
     response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
     response.content_type = "application/json"

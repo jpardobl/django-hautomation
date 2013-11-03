@@ -19,6 +19,8 @@ def access_required(func, *args, **kwargs):
         if user is not None:
             if user.is_active:
                 return func(*args, **kwargs)
-        return HttpResponseForbidden()
+        return HttpResponseForbidden(
+            simplejson.dumps({"errors": ["username/password not valid", ]}),
+            content_type="application/json",)
 
     return decorator
