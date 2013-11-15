@@ -51,15 +51,15 @@ def pl_switch(request, protocol, did):
             )
 
     try:
-        device = Device.objects.get(did=did, device_type__in=("dimmer", "switch"))
+        device = Device.objects.get(did=did)
     except Device.DoesNotExist:
         return HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
+            content=simplejson.dumps({"errors": ["Device (did=%s) not found" % did, ]}),
             content_type="application/json",
             )
     except Exception, er:
         return HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
+            content=simplejson.dumps({"errors": ["Error while fetching device (did=%s): %s" % (did, er), ]}),
             content_type="application/json",
             )
 
