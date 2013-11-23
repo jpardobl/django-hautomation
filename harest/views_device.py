@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from auth import access_required
 from django.http import QueryDict
 
+
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
 

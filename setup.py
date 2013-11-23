@@ -24,6 +24,8 @@ setup(
     install_requires = (
       "Django==1.5",
       "simplejson==2.6.2",
+      "hautomation_restclient",
+      "ginsfsm",
     ),
     test_suite='test_project.tests.runtests',
     tests_require=("selenium", "requests"),

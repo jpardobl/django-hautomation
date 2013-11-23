@@ -1,0 +1,41 @@
+{%extends 'base.html'%}
+{%block content%}
+<form action="{%url 'policy_rule_table' obj.name%}" method="POST">
+    {% csrf_token %}
+{{form}}
+<button type="submit">Aceptar</button>
+</form>
+<div id="ruleset"></div>
+
+{{r_form}}
+<a href="javascript:void(0)" onclick="add_rule('{{obj.name}}')">enviar</a>
+
+<div id="response"></div>
+{%endblock%}
+
+{%block document_ready%}
+
+load_url("#ruleset", "{%url 'policy_rules_by_table' obj.name%}")
+
+
+{%endblock%}
+{%block script%}
+function add_rule(t_name){
+
+    send_url_post(
+        "{%url 'policy_add_rule'%}" + t_name,
+        function(d){
+            load_url("#ruleset", "{%url 'policy_rules_by_table' obj.name%}")
+            
+        },
+        {"Rule": $("#id_Rule").val(), "RuleIsEnabled": $("#id_RuleIsEnabled").val()})
+}
+
+function del_rule(id){
+    send_url(
+        "{%url 'policy_del_rule'%}" + id,
+        function(d){
+            $(".rulerow[i="+id+"]").fadeOut()
+        })
+}
+{%endblock%}

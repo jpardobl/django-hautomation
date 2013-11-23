@@ -1,0 +1,70 @@
+from pypelib import Rule, RuleTable
+from django.db import modes
+from mappings import get_mappings
+
+
+RULE_TYPES = (
+    (Rule.POSITIVE_TERMINAL, "POSITIVE_TERMINAL"),
+    (Rule.POSITIVE_NONTERMINAL, "POSITIVE_NONTERMINAL"),
+    (Rule.NEGATIVE_TERMINAL, "NEGATIVE_TERMINAL"),
+    (Rule.NEGATIVE_NONTERMINAL, "NEGATIVE_NONTERMINAL"),
+)
+
+#MAPPINGS = [ (k, v) for k, v in get_mappings()]
+
+
+class RuleModel(models.Model):
+
+    condition = models.CharField(max_length=400)
+    description = models.TextArea(null=True, blank=True)
+    error_msg = models.CharField(max_lenggth=500)
+    rule_type = models.CharField(max_length=20, choices=RULE_TYPES)
+    action = models.CharField(max_length=20)
+
+    inner = None
+
+    def __init__(self, condition, description, errorMsg, ruleType=RULE_TYPES.POSITIVE_TERMINAL, action=None):
+        super(RuleModel, self).__init__()
+        self.inner = Rule(
+            self.condition,
+            self.description,
+            self.error_msg,
+            self.rule_type,
+            self.action,
+        )
+#(self,condition,description,errorMsg,ruleType=POSITIVE_TERMINAL,action=None,uuid=None):
+
+
+class RuleTableManager(models.Manager):
+    def get(self, *args, **kwargs):
+        name = kwargs["name"]
+        rt = super(RuleTableManager, self).get(name=name)
+
+        rt.inner = RuleTable.load(name, get_mappings(), "RegexParser")
+        return rt
+
+
+class RuleTableModel(Model):
+    objects = RuleTableManager()
+    name = models.CharField(max_length=30)
+    #resolverMappings = models.CharField(choices=MAPPINGS, max_length=30)
+
+    inner = None
+
+    def __unicode__(self, ):
+        return u"%s" % self.inner.dump()
+
+    def save(self, ):
+        self.inner = RuleTable(
+            self.name,
+            get_mappings(),
+            "RegexParser",
+            "RAWFile", )
+
+        super(RuleTableModel, self).save()
+
+
+
+
+
+#(self,name,resolverMappings,defaultParser, defaultPersistence, defaultPersistenceFlag, pType = False, uuid = None,**kwargs)

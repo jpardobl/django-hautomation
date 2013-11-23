@@ -1,0 +1,19 @@
+from pypelibgui.models import RuleModel, RuleTableModel
+from django import forms
+from django.forms.widgets import Select
+from pypelibgui.models import RULE_TYPES
+
+
+class RuleForm(forms.ModelForm):
+    class Meta:
+        model = RuleModel
+
+
+class RuleTableForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(RuleTableForm, self).__init__(*args, **kwargs)
+        self.fields["type"].widget = Select(choices=RULE_TYPES)
+
+    class Meta:
+        model = RuleTableModel
+        fields = ("name", "type")
