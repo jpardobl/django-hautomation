@@ -6,17 +6,92 @@ from django.views.decorators.csrf import csrf_exempt
 from auth import access_required
 from django.core.urlresolvers import reverse
 import simplejson
-#
-# Home automation commands
-#
-#   switch command
-#      accepted values on|off
 
 
-def test(request):
+@csrf_exempt
+@access_required
+def pl_all_lights_on(request, protocol, group):
+    if request.method != "PUT":
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_all_lights_on command!!, arrived: %s" % request.method, ]}),
+            content_type="application/json",
+            )
+    try:
+        protocol = Protocol.objects.get(name=protocol)
+    except Protocol.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
+            content_type="application/json",
+            )
+
+    # ginsfsm ***********************************
     from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj("driver_X10")
-    driver.broadcast_event("EV_DEVICE_UPDATE", data="esta es mi ata")
+    driver = global_get_gobj(protocol.gobj_name, protocol.name)
+    driver.post_event(
+        driver,
+        "EV_COMMAND",
+        data=simplejson.dumps({
+            "cmd": "pl_all_lights_on",
+            "group": group,
+        }))
+
+    # ginsfsm ***********************************
+
+    #TODO changes in device must be made from EV_DEVICE_UPDATE
+    for device in Device.objects.filter(did__istartswith=group):
+        device.status = 100
+        device.save()
+    response = HttpResponse(simplejson.dumps({"status": "ok"}))
+    response.content_type = "application/json"
+    return response
+
+
+@csrf_exempt
+@access_required
+def pl_all_lights_off(request, protocol, group):
+    if request.method != "PUT":
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_all_lights_off command!!, arrived: %s" % request.method, ]}),
+            content_type="application/json",
+            )
+    try:
+        protocol = Protocol.objects.get(name=protocol)
+    except Protocol.DoesNotExist:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
+            content_type="application/json",
+            )
+    except Exception, er:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
+            content_type="application/json",
+            )
+
+    # ginsfsm ***********************************
+    from ginsfsm.globals import global_get_gobj
+    driver = global_get_gobj(protocol.gobj_name, protocol.name)
+    driver.post_event(
+        driver,
+        "EV_COMMAND",
+        data=simplejson.dumps({
+            "cmd": "pl_all_lights_off",
+            "group": group,
+        }))
+
+    # ginsfsm ***********************************
+
+    #TODO changes in device must be made from EV_DEVICE_UPDATE
+    for device in Device.objects.filter(did__istartswith=group):
+        device.status = 0
+        device.save()
+    response = HttpResponse(simplejson.dumps({"status": "ok"}))
+    response.content_type = "application/json"
+    return response
 
 
 @csrf_exempt
