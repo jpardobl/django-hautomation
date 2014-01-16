@@ -4,12 +4,11 @@ from forms import DeviceForm, DeviceUpdateForm
 from django.shortcuts import redirect, render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
-import simplejson
+import simplejson, logging
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from auth import access_required
 from django.http import QueryDict
-
 
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
@@ -35,7 +34,7 @@ def get(request, *args, **kwargs):
 
     elif "device_type" in request.GET:
         if request.GET["device_type"] == "" or request.GET["device_type"] is None:
-            return HttpResponseBaRequest("Invalid device_type")
+            return HttpResponseBadRequest("Invalid device_type")
 
         data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
 
@@ -66,7 +65,6 @@ def put(request, protocol, did):
     form = DeviceUpdateForm(qd, instance=obj)
 
     if form.is_valid():
-        print "aquiii"
         obj = form.save(commit=False)
 
         obj.save()
@@ -74,7 +72,7 @@ def put(request, protocol, did):
         response = redirect(reverse('device_by_id', kwargs={"protocol": obj.protocol, "did": obj.id}))
         response.content_type = "application/json"
         return response
-    print "errores %s" % form.errors
+    logging.debug("PUT view: errores en el form %s" % form.errors)
     return HttpResponseBadRequest(
         simplejson.dumps({"errors": [x for x in form.errors]}),
         content_type="application/json")
@@ -104,7 +102,6 @@ def post(request):
             validate_address(obj.did)
             obj.save()
         except ValueError:
-            print "eje1"
             return HttpResponseBadRequest(
                 content=simplejson.dumps({"errors": ["did"]}),
                 content_type="application/json",

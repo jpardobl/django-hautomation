@@ -1,5 +1,6 @@
 Django==1.5
 simplejson==2.6.2
+ginsfsm
 
 [json]
 simplejson

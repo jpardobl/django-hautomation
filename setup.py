@@ -8,23 +8,22 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name = 'django-hautomation',
-    version = '0.6',
+    version = '1.0',
     packages = ['hacore', 'harest'],
     include_package_data = True,
     license = 'BSD License',
     description = 'A Django app which provides a REST API for home automation',
     long_description = README,
 #TODO set the project's home page
-    url = 'http://jpardobl.com',
+    url = 'http://blog.digitalhigh.es',
     author = 'Javier Pardo Blasco(jpardobl)',
     author_email = 'jpardo@digitalhigh.es',
     extras_require = {
-        "json": "simplejson"
+        "json": "simplejson",
         },
     install_requires = (
       "Django==1.5",
       "simplejson==2.6.2",
-   #   "hautomation_restclient",
       "ginsfsm",
     ),
     test_suite='test_project.tests.runtests',
@@ -40,5 +39,6 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Home Automation',
     ],
 )

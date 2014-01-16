@@ -2,7 +2,7 @@
 # plugins must have a start_up function: <module>.start_up()
 import logging
 from models import Protocol
-import simplejson
+#import simplejson
 from ginsfsm.gobj import GObj
 from ginsfsm.gaplic import GAplic, setup_gaplic_thread
 
@@ -15,7 +15,7 @@ drivers = []
 try:
     protocols = Protocol.objects.all()
     for protocol in protocols:
-        print "loading %s protocol driver..." % protocol.name
+        logging.debug("loading %s protocol driver..." % protocol.name)
         exec "from %s import start_up" % protocol.module
 
         drivers.append(start_up())
@@ -27,13 +27,13 @@ except Exception:
 # -----------------------------
 def ac_rx_tx_data(self, event):
     data = event.kw['data']
-    print("RECIBO======> %s" % data)
+    logging.debug("RECIBO======> %s" % data)
     self.broadcast_event('EV_DEVICE_UPDATE', data=data)
 
 
 def ac_rx_tx_error(self, event):
     data = event.kw["data"]
-    print("RECIBO ERROR======> %s" % data)
+    logging.debug("RECIBO ERROR======> %s" % data)
     self.broadcast_event('EV_ERROR', data=data)
 
 

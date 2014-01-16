@@ -7,10 +7,10 @@ django_hautomation.egg-info/dependency_links.txt
 django_hautomation.egg-info/requires.txt
 django_hautomation.egg-info/top_level.txt
 docs/harest_testing.txt
-docs/plugins.txt
 hacore/__init__.py
 hacore/admin.py
 hacore/models.py
+hacore/plugins.py
 harest/__init__.py
 harest/auth.py
 harest/forms.py
@@ -20,4 +20,5 @@ harest/tests.py
 harest/urls.py
 harest/views_cmds.py
 harest/views_device.py
+harest/views_protocol.py
 harest/templates/device/list.json
