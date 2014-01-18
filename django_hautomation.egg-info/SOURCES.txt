@@ -1,5 +1,6 @@
 LICENSE
 MANIFEST.in
+README.md
 setup.py
 django_hautomation.egg-info/PKG-INFO
 django_hautomation.egg-info/SOURCES.txt
