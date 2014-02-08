@@ -12,49 +12,54 @@ from django.http import QueryDict
 
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
-
-    if "did" in kwargs and "protocol" in kwargs:
-        protocol = get_object_or_404(Protocol, name=kwargs["protocol"])
-        obj = get_object_or_404(Device, protocol=protocol, did=kwargs["did"])
-
-        response = HttpResponse(
-            content=obj.to_json(),
+    try:
+        if "did" in kwargs and "protocol" in kwargs:
+            protocol = get_object_or_404(Protocol, name=kwargs["protocol"])
+            obj = get_object_or_404(Device, protocol=protocol, did=kwargs["did"])
+    
+            response = HttpResponse(
+                content=obj.to_json(),
+                content_type="application/json",
+            )
+    
+            response['Cache-Control'] = 'no-cache'
+            return response
+    
+        if "protocol" in request.GET:
+            if request.GET["protocol"] == "" or request.GET["protocol"] is None:
+                return HttpResponseBadRequest("Invalid protocol")
+            protocol = get_object_or_404(Protocol, name=request.GET["protocol"])
+    
+            data = [x.to_json() for x in protocol.devices.all()]
+    
+        elif "device_type" in request.GET:
+            if request.GET["device_type"] == "" or request.GET["device_type"] is None:
+                raise Exception("Invalid device_type")
+    
+            data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
+    
+        elif "status" in request.GET:
+            if request.GET["status"] is None:
+                raise Exception("Invalid status")
+    
+            data = [x.to_json() for x in Device.objects.filter(status=request.GET["status"])]
+    
+        else:
+            raise Exception("Posible mandatory query filters 'did' or 'protocol' or 'device_type' or 'status'")
+                    
+        response = render_to_response(
+            "device/list.json",
+            {"data": data},
             content_type="application/json",
         )
-
         response['Cache-Control'] = 'no-cache'
         return response
-
-    if "protocol" in request.GET:
-        if request.GET["protocol"] == "" or request.GET["protocol"] is None:
-            return HttpResponseBadRequest("Invalid protocol")
-        protocol = get_object_or_404(Protocol, name=request.GET["protocol"])
-
-        data = [x.to_json() for x in protocol.devices.all()]
-
-    elif "device_type" in request.GET:
-        if request.GET["device_type"] == "" or request.GET["device_type"] is None:
-            return HttpResponseBadRequest("Invalid device_type")
-
-        data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
-
-    elif "status" in request.GET:
-        if request.GET["status"] is None:
-            return HttpResponseBadRequest("Ivalid status")
-
-        data = [x.to_json() for x in Device.objects.filter(status=request.GET["status"])]
-
-    else:
-        return HttpResponseBadRequest(
-            "Posible mandatory query filters 'did' or 'protocol' or 'device_type' or 'status'")
-    response = render_to_response(
-        "device/list.json",
-        {"data": data},
-        content_type="application/json",
-    )
-    response['Cache-Control'] = 'no-cache'
-    return response
-
+    except Exception, er:
+        response =  HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": er}),
+            content_type="application/json") 
+        response['Cache-Control'] = 'no-cache'
+        return response
 
 def put(request, protocol, did):
 
