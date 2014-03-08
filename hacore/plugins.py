@@ -6,7 +6,7 @@ from models import Protocol
 from ginsfsm.gobj import GObj
 from ginsfsm.gaplic import GAplic, setup_gaplic_thread
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 # initialize plugin threads
 # --------------------------
@@ -97,20 +97,15 @@ class Controller(GObj):
             pass
 
 local_conf = {
-    'GObj.trace_mach': True,
-    'GObj.logger': logging,
-}
-
-local_conf = {
     'router_enabled':  True,
     'GRouter.server':  True,
     'GRouter.localhost_route_ports':  8002,
-    'GRouter.trace_router':  True,
+    'GRouter.trace_router':  False,
     'GObj.trace_mach':  False,
     'GObj.trace_creation':  False,
     'GObj.trace_traverse':  False,
-    'GObj.trace_subscription':  True,
-    'GSock.trace_dump':  True,
+    'GObj.trace_subscription':  False,
+    'GSock.trace_dump':  False,
     'GObj.logger': logging,
 
 }
