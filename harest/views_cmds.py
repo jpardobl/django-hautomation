@@ -29,7 +29,7 @@ def pl_all_lights_on(request, protocol, group):
             content_type="application/json",
             )
 
-     exec "from %s.cmds import pl_all_lights_on" % protocol.module
+    exec "from %s.cmds import pl_all_lights_on" % protocol.module
 
     try:
         ret = pl_all_lights_on(device.did, value)
