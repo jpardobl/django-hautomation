@@ -29,18 +29,15 @@ def pl_all_lights_on(request, protocol, group):
             content_type="application/json",
             )
 
-    # ginsfsm ***********************************
-    from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj(protocol.gobj_name, protocol.name)
-    driver.post_event(
-        driver,
-        "EV_COMMAND",
-        data=simplejson.dumps({
-            "cmd": "pl_all_lights_on",
-            "group": group,
-        }))
+     exec "from %s.cmds import pl_all_lights_on" % protocol.module
 
-    # ginsfsm ***********************************
+    try:
+        ret = pl_all_lights_on(device.did, value)
+    except ValueError, ex:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content_type="application/json",
+            )
 
     #TODO changes in device must be made from EV_DEVICE_UPDATE
     for device in Device.objects.filter(did__istartswith=group):
@@ -72,18 +69,15 @@ def pl_all_lights_off(request, protocol, group):
             content_type="application/json",
             )
 
-    # ginsfsm ***********************************
-    from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj(protocol.gobj_name, protocol.name)
-    driver.post_event(
-        driver,
-        "EV_COMMAND",
-        data=simplejson.dumps({
-            "cmd": "pl_all_lights_off",
-            "group": group,
-        }))
+    exec "from %s.cmds import pl_all_lights_off" % protocol.module
 
-    # ginsfsm ***********************************
+    try:
+        ret = pl_all_lights_off(device.did, value)
+    except ValueError, ex:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content_type="application/json",
+            )
 
     #TODO changes in device must be made from EV_DEVICE_UPDATE
     for device in Device.objects.filter(did__istartswith=group):
@@ -138,20 +132,7 @@ def pl_switch(request, protocol, did):
             content_type="application/json",
             )
 
-    # ginsfsm ***********************************
-    from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj(protocol.gobj_name, protocol.name)
-    driver.post_event(
-        driver,
-        "EV_COMMAND",
-        data=simplejson.dumps({
-            "cmd": "pl_switch",
-            "did": device.did,
-            "value": value,
-        }))
 
-    # ginsfsm ***********************************
-    """
     exec "from %s.cmds import pl_switch" % protocol.module
 
     try:
@@ -161,7 +142,6 @@ def pl_switch(request, protocol, did):
             content=simplejson.dumps({"errors": [str(ex), ]}),
             content_type="application/json",
             )
-    """
     #TODO changes in device must be made from EV_DEVICE_UPDATE
     device.status = 0 if value == "off" else 100
     device.save()
@@ -212,20 +192,15 @@ def pl_dim(request, protocol, did):
             content_type="application/json",
             )
 
-    # ginsfsm ***********************************
-    from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj(protocol.gobj_name, protocol.name)
-    driver.post_event(
-        driver,
-        "EV_COMMAND",
-        data=simplejson.dumps({
-            "cmd": "pl_dim",
-            "did": device.did,
-            "value": value,
-        }))
+    exec "from %s.cmds import pl_dim" % protocol.module
 
-    # ginsfsm ***********************************
-
+    try:
+        ret = pl_switch(device.did, value)
+    except ValueError, ex:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content_type="application/json",
+            )
     device.status = 0 if value == "off" else 100
     device.save()
     response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
@@ -276,19 +251,15 @@ def pl_bri(request, protocol, did):
             )
 
 
-    # ginsfsm ***********************************
-    from ginsfsm.globals import global_get_gobj
-    driver = global_get_gobj(protocol.gobj_name, protocol.name)
-    driver.post_event(
-        driver,
-        "EV_COMMAND",
-        data=simplejson.dumps({
-            "cmd": "pl_bri",
-            "did": device.did,
-            "value": value,
-        }))
+    exec "from %s.cmds import pl_bri" % protocol.module
 
-    # ginsfsm ***********************************
+    try:
+        ret = pl_bri(device.did, value)
+    except ValueError, ex:
+        return HttpResponseBadRequest(
+            content=simplejson.dumps({"errors": [str(ex), ]}),
+            content_type="application/json",
+            )
 
     device.status = 0 if value == "off" else 100
     device.save()

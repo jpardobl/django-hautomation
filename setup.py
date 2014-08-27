@@ -8,7 +8,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name = 'django-hautomation',
-    version = '1.0.1',
+    version = '1.0.2',
     packages = ['hacore', 'harest'],
     include_package_data = True,
     license = 'BSD License',
@@ -24,7 +24,6 @@ setup(
     install_requires = (
       "Django==1.5",
       "simplejson==2.6.2",
-      "ginsfsm",
     ),
     test_suite='test_project.tests.runtests',
     tests_require=("selenium", "requests"),
