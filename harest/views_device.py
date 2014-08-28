@@ -12,7 +12,7 @@ from django.http import QueryDict
 from django.conf import settings
 
 logger = logging.getLogger("rest")
-logger.setLevel(LOG_LEVEL)
+logger.setLevel(settings.LOG_LEVEL)
 
 
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
