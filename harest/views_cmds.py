@@ -14,32 +14,27 @@ def pl_all_lights_on(request, protocol, group):
     if request.method != "PUT":
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_all_lights_on command!!, arrived: %s" % request.method, ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
     try:
         protocol = Protocol.objects.get(name=protocol)
     except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
-            content_type="application/json",
-            )
-    except Exception, er:
+            content_type="application/json",)
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     exec "from %s.cmds import pl_all_lights_on" % protocol.module
 
     try:
-        ret = pl_all_lights_on(device.did, value)
-    except ValueError, ex:
+        ret = pl_all_lights_on(group, "on")
+    except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
-    #TODO changes in device must be made from EV_DEVICE_UPDATE
     for device in Device.objects.filter(did__istartswith=group):
         device.status = 100
         device.save()
@@ -54,32 +49,27 @@ def pl_all_lights_off(request, protocol, group):
     if request.method != "PUT":
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_all_lights_off command!!, arrived: %s" % request.method, ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
     try:
         protocol = Protocol.objects.get(name=protocol)
     except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
-            content_type="application/json",
-            )
-    except Exception, er:
+            content_type="application/json",)
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     exec "from %s.cmds import pl_all_lights_off" % protocol.module
 
     try:
-        ret = pl_all_lights_off(device.did, value)
-    except ValueError, ex:
+        ret = pl_all_lights_off(group, "off")
+    except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
-    #TODO changes in device must be made from EV_DEVICE_UPDATE
     for device in Device.objects.filter(did__istartswith=group):
         device.status = 0
         device.save()
@@ -95,15 +85,13 @@ def pl_switch(request, protocol, did):
     if request.method != "PUT":
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Only PUT HTTP verb accepted for pl_switch command!!, arrived: %s" % request.method, ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     qd = QueryDict(request.body, request.encoding)
     if "value" not in qd:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Switch command needs a value to be set", ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
     value = qd["value"].lower()
 
     try:
@@ -111,22 +99,19 @@ def pl_switch(request, protocol, did):
     except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
-            content_type="application/json",
-            )
-    except Exception, er:
+            content_type="application/json",)
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     try:
         device = Device.objects.get(did=did)
     except Device.DoesNotExist:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Device (did=%s) not found" % did, ]}),
-            content_type="application/json",
-            )
-    except Exception, er:
+            content_type="application/json",)
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching device (did=%s): %s" % (did, er), ]}),
             content_type="application/json",
@@ -137,12 +122,12 @@ def pl_switch(request, protocol, did):
 
     try:
         ret = pl_switch(device.did, value)
-    except ValueError, ex:
+    except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
             content_type="application/json",
             )
-    #TODO changes in device must be made from EV_DEVICE_UPDATE
+
     device.status = 0 if value == "off" else 100
     device.save()
     response = redirect(reverse('device_by_id', kwargs={"protocol": device.protocol, "did": device.did}))
@@ -173,7 +158,7 @@ def pl_dim(request, protocol, did):
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
             content_type="application/json",
             )
-    except Exception, er:
+    except Exception aw er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
             content_type="application/json",
@@ -186,7 +171,7 @@ def pl_dim(request, protocol, did):
             content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
             content_type="application/json",
             )
-    except Exception, er:
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
             content_type="application/json",
@@ -196,7 +181,7 @@ def pl_dim(request, protocol, did):
 
     try:
         ret = pl_switch(device.did, value)
-    except ValueError, ex:
+    except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
             content_type="application/json",
@@ -229,13 +214,11 @@ def pl_bri(request, protocol, did):
     except Protocol.DoesNotExist:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
-            content_type="application/json",
-            )
-    except Exception, er:
+            content_type="application/json",)
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     try:
         device = Device.objects.get(did=did, device_type="dimmer")
@@ -244,22 +227,20 @@ def pl_bri(request, protocol, did):
             content=simplejson.dumps({"errors": ["Device (did=%s, type=dimmer) not found" % did, ]}),
             content_type="application/json",
             )
-    except Exception, er:
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching device (did=%s, type=dimmer): %s" % (did, er), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
 
     exec "from %s.cmds import pl_bri" % protocol.module
 
     try:
         ret = pl_bri(device.did, value)
-    except ValueError, ex:
+    except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
-            content_type="application/json",
-            )
+            content_type="application/json",)
 
     device.status = 0 if value == "off" else 100
     device.save()

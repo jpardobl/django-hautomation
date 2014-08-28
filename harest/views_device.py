@@ -9,57 +9,57 @@ from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from auth import access_required
 from django.http import QueryDict
+from django.conf import settings
+
+logger = logging.getLogger("rest")
+logger.setLevel(LOG_LEVEL)
+
 
 #@user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Alumnos presenciales').exists())
 def get(request, *args, **kwargs):
-    try:
-        if "did" in kwargs and "protocol" in kwargs:
-            protocol = get_object_or_404(Protocol, name=kwargs["protocol"])
-            obj = get_object_or_404(Device, protocol=protocol, did=kwargs["did"])
-    
-            response = HttpResponse(
-                content=obj.to_json(),
-                content_type="application/json",
-            )
-    
-            response['Cache-Control'] = 'no-cache'
-            return response
-    
-        if "protocol" in request.GET:
-            if request.GET["protocol"] == "" or request.GET["protocol"] is None:
-                return HttpResponseBadRequest("Invalid protocol")
-            protocol = get_object_or_404(Protocol, name=request.GET["protocol"])
-    
-            data = [x.to_json() for x in protocol.devices.all()]
-    
-        elif "device_type" in request.GET:
-            if request.GET["device_type"] == "" or request.GET["device_type"] is None:
-                raise Exception("Invalid device_type")
-    
-            data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
-    
-        elif "status" in request.GET:
-            if request.GET["status"] is None:
-                raise Exception("Invalid status")
-    
-            data = [x.to_json() for x in Device.objects.filter(status=request.GET["status"])]
-    
-        else:
-            raise Exception("Posible mandatory query filters 'did' or 'protocol' or 'device_type' or 'status'")
-                    
-        response = render_to_response(
-            "device/list.json",
-            {"data": data},
+
+    if "did" in kwargs and "protocol" in kwargs:
+        protocol = get_object_or_404(Protocol, name=kwargs["protocol"])
+        obj = get_object_or_404(Device, protocol=protocol, did=kwargs["did"])
+
+        response = HttpResponse(
+            content=obj.to_json(),
             content_type="application/json",
         )
+
         response['Cache-Control'] = 'no-cache'
         return response
-    except Exception, er:
-        response =  HttpResponseBadRequest(
-            content=simplejson.dumps({"errors": er}),
-            content_type="application/json") 
-        response['Cache-Control'] = 'no-cache'
-        return response
+
+    if "protocol" in request.GET:
+        if request.GET["protocol"] == "" or request.GET["protocol"] is None:
+            return HttpResponseBadRequest("Invalid protocol")
+        protocol = get_object_or_404(Protocol, name=request.GET["protocol"])
+
+        data = [x.to_json() for x in protocol.devices.all()]
+
+    elif "device_type" in request.GET:
+        if request.GET["device_type"] == "" or request.GET["device_type"] is None:
+            raise Exception("Invalid device_type")
+
+        data = [x.to_json() for x in Device.objects.filter(device_type=request.GET["device_type"])]
+
+    elif "status" in request.GET:
+        if request.GET["status"] is None:
+            raise Exception("Invalid status")
+
+        data = [x.to_json() for x in Device.objects.filter(status=request.GET["status"])]
+
+    else:
+        raise Exception("Posible mandatory query filters 'did' or 'protocol' or 'device_type' or 'status'")
+
+    response = render_to_response(
+        "device/list.json",
+        {"data": data},
+        content_type="application/json",
+    )
+    response['Cache-Control'] = 'no-cache'
+    return response
+
 
 def put(request, protocol, did):
 
@@ -77,7 +77,7 @@ def put(request, protocol, did):
         response = redirect(reverse('device_by_id', kwargs={"protocol": obj.protocol, "did": obj.id}))
         response.content_type = "application/json"
         return response
-    logging.debug("PUT view: errores en el form %s" % form.errors)
+    logger.debug("PUT view: errores en el form %s" % form.errors)
     return HttpResponseBadRequest(
         simplejson.dumps({"errors": [x for x in form.errors]}),
         content_type="application/json")

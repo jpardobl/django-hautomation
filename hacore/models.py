@@ -45,5 +45,3 @@ class Device(models.Model):
         unique_together = ("protocol", "did")
 
 
-import plugins
-
