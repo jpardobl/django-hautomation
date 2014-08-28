@@ -158,7 +158,7 @@ def pl_dim(request, protocol, did):
             content=simplejson.dumps({"errors": ["Protocol %s not found" % protocol, ]}),
             content_type="application/json",
             )
-    except Exception aw er:
+    except Exception as er:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": ["Error while fetching protocol %s: %s" % (protocol, er), ]}),
             content_type="application/json",
