@@ -29,7 +29,7 @@ def pl_all_lights_on(request, protocol, group):
     exec "from %s.cmds import pl_all_lights_on" % protocol.module
 
     try:
-        ret = pl_all_lights_on(group, "on")
+        ret = pl_all_lights_on(group)
     except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
@@ -64,7 +64,7 @@ def pl_all_lights_off(request, protocol, group):
     exec "from %s.cmds import pl_all_lights_off" % protocol.module
 
     try:
-        ret = pl_all_lights_off(group, "off")
+        ret = pl_all_lights_off(group)
     except ValueError as ex:
         return HttpResponseBadRequest(
             content=simplejson.dumps({"errors": [str(ex), ]}),
